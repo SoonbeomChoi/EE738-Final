@@ -10,7 +10,7 @@ EXPORT_DIR = './Export/'
 DEVICE = 1 # 0 : cpu, 1 : gpu0, 2 : gpu1, ...
 DATA_LENGTH = 256
 TRAIN_RATIO = 0.75
-NUM_CLASS = 4
+NUM_CLASS = 4 # 0 : Non-keyword, 1 - 3: Keywords
 
 EPOCH = 200
 BATCH_SIZE = 1
