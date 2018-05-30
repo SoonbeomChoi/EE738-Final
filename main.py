@@ -1,5 +1,3 @@
-import os
-import glob as gl
 import numpy as np
 
 import data_manager
