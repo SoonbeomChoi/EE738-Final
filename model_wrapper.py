@@ -5,8 +5,6 @@ import torch.nn as nn
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.autograd import Variable
 
-import model_archive
-
 class Wrapper(object):
     #Settings of model, loss function, optimizer and scheduler
     def __init__(self, model, learn_rate):
