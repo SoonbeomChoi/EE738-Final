@@ -1,3 +1,4 @@
+import os
 import numpy as np
 
 import torch
@@ -68,3 +69,14 @@ class Wrapper(object):
             print('Early stopping\n\n')
 
         return stop
+
+    def export(self, export_dir, feature, annotation, prediction):
+        if not os.path.exists(export_dir):
+            os.makedirs(export_dir)
+
+        model_save_path = os.path.join(export_dir, 'model.pth')
+        torch.save(self.model, model_save_path)
+
+        np.save(os.path.join(export_dir, 'feature.npy'), feature)
+        np.save(os.path.join(export_dir, 'annotation.npy'), annotation)
+        np.save(os.path.join(export_dir, 'prediction.npy'), prediction)
