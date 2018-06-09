@@ -5,7 +5,7 @@ import numpy as np
 import librosa
 
 DATASET_DIR = './SRS_DB/'
-EXTRACTED_DIR = './Dataset/mfcc/'
+EXTRACTED_DIR = './Dataset/phoneme_mfcc/'
 
 def labeling(file_path):
     label = 0
@@ -25,8 +25,9 @@ def log_spectrogram(file_path, fft_size=1024, hop_size=160):
 
     return feature
 
+
 def mfcc(file_path, fft_size=1024, hop_size=160, n_mels=128, n_mfcc=40):
-    y, sr = librosa.load(file_path)
+    y, sr = librosa.load(file_path, sr=22050)
     S = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=fft_size, hop_length=hop_size, n_mels=n_mels)
     feature = librosa.feature.mfcc(S=librosa.power_to_db(S), n_mfcc=n_mfcc).T
 
@@ -46,6 +47,32 @@ def feature_extraction(file_path, dataset_dir=DATASET_DIR, extracted_dir=EXTRACT
     elif 'Test' in file_path:
         dataset_subdir = 'test'
     np.save(os.path.join(extracted_dir, dataset_subdir, numpy_filename), feature_n_label)
+
+def feature_extraction_phoneme(file_path, dataset_dir=DATASET_DIR, extracted_dir=EXTRACTED_DIR):
+    feature = mfcc(file_path)
+    label = labeling(file_path)
+
+    phoneme_path = file_path.replace('SRS_DB', 'Phoneme') + '.scores'
+    phoneme = np.loadtxt(phoneme_path, skiprows=1)
+
+    phoneme_new =np.zeros((feature.shape[0], phoneme.shape[1]))
+    if phoneme.shape[0] < feature.shape[0]:
+        phoneme_new[:phoneme.shape[0],:] = phoneme
+        phoneme_new[phoneme.shape[0]:,:] = phoneme[-1,:]
+    else:
+        phoneme_new = phoneme[:feature.shape[0],:]
+
+    audio_filename = os.path.basename(file_path)
+    numpy_filename = audio_filename.replace('.wav', '.npy')
+
+    feature = np.array((feature.astype(np.float32), phoneme_new.astype(np.float32), label), dtype=object)
+
+    if 'Train' in file_path:
+        dataset_subdir = 'train'
+    elif 'Test' in file_path:
+        dataset_subdir = 'test'
+
+    np.save(os.path.join(extracted_dir, dataset_subdir, numpy_filename), feature)
 
 def main():
     if not os.path.exists(os.path.join(EXTRACTED_DIR, 'train')):
@@ -67,7 +94,7 @@ def main():
             if file.endswith('.wav'):
                 file_cnt += 1
                 file_path = os.path.join(path, file)
-                feature_extraction(file_path)
+                feature_extraction_phoneme(file_path)
                 if pertenmile < 10000*file_cnt/num_wav:
                     pertenmile = 10000*file_cnt/num_wav
                     print('[' + str(pertenmile/100.0) + '%] is done')
